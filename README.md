@@ -1,4 +1,5 @@
-# Prediction-of-high-school-assessment-proficiency
+# Which feature can predict a high school's academic achievement?
+
 The github repo contains all the data files, documentation and codes utilized in my Data Science Capstone Project.
 
 **Project Goal**: Identify selected feature(s) that can predict a high school’s academic achievement as measured by their proficiency performance on standardized state assessments for reading and math. 
