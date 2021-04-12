@@ -14,9 +14,8 @@ Phase 1: Download, clean and process dataset
 Phase 2: EDA and Model construction
 * Data exploration and pattern identification
 * Train and test prediction models
-* Assess model performance using RMS
 
 Phase 3: Execution and Interpretation
-* 
+* Assess model performance using RMS
 
 Additional details about this project can be found on https://sites.google.com/umbc.edu/data606/spring-2021-section-2/dana-ansari
