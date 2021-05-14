@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ## Phase 1: Clean up of CRDC data files
+# ## Phase 1: Clean up of CRDC data files. This notebook contains code that cleans and merges the 8 individual crdc files for school characteristics, school support, school expenditures, AP, IB, SAT_ACT, Algebra 1 and enrollment into a two files: one for reading and the other for math.
 
-# In[1]:
+# ### Loading necessary libraries
+
+# In[298]:
 
 
 import pandas
@@ -14,429 +16,464 @@ import seaborn as sns
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 
-# In[2]:
+# In[299]:
 
 
-cd /Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC
+cd /Users/dansa/Documents/GitHub/Phase1/Data/CRDC
 
 
-# ### Cleaning school characteristics file
+# ### 1. Cleaning school characteristics file
 
-# In[3]:
+# In[300]:
 
 
 Sch_char = pandas.read_csv("School Characteristics.csv",encoding='cp1252')
 Sch_char.head()
 
 
-# In[4]:
+# In[301]:
 
 
 Sch_char['SCHID'] = Sch_char['SCHID'].apply(lambda x: '{0:0>5}'.format(x))
 
 
-# In[5]:
+# In[302]:
 
 
 Sch_char['LEAID'] = Sch_char['LEAID'].apply(lambda x: '{0:0>7}'.format(x))
 
 
-# In[6]:
+# In[303]:
 
 
 Sch_char.columns
 
 
-# In[7]:
+# #### Dropping unnecessary columns
+
+# In[304]:
 
 
 Sch_char.drop(Sch_char.columns[[7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,30,31]], axis=1, inplace=True)
 
 
-# In[8]:
+# In[305]:
 
 
 Sch_char.shape
 
 
-# In[9]:
+# In[306]:
 
 
 #Sch_char.head()
 
 
-# In[10]:
+# ##### Since we do not have NCESSCH ID we can impute it using the LEAID and SCHID. 
+# ##### Note: Unique NCES public school ID is generated based on the (7-digit NCES agency ID (LEAID) + 5-digit NCES school ID (SCHID). See https://nces.ed.gov/ccd/data/txt/psu10play.txt for more info
+
+# In[307]:
 
 
 cols = ['LEAID', 'SCHID']
 Sch_char['NCESSCH'] = Sch_char[cols].apply(lambda row: ''.join(row.values.astype(str)), axis=1)
 
 
-# In[11]:
+# In[308]:
 
 
 Sch_char['NCESSCH'].is_unique
 
 
-# In[12]:
+# #### Renaming columns
+
+# In[309]:
 
 
 Sch_char.rename(columns={'SCH_STATUS_SPED':'Special_ed_schl','SCH_STATUS_MAGNET':'Magnet_schl','SCH_STATUS_CHARTER':'Charter_Schl','SCH_STATUS_ALT':'Alternate_schl'}, inplace=True)
 
 
-# In[13]:
+# In[310]:
 
 
 Sch_char.head()
 
 
-# In[14]:
+# In[311]:
 
 
 count = Sch_char['Charter_Schl'].value_counts() 
 print(count) 
 
 
-# In[15]:
+# ##### Recoding string Y/N values to integers 1/0
+
+# In[312]:
 
 
 Sch_char['Special_ed_schl_new'] = Sch_char['Special_ed_schl'].replace(['Yes','No'],['1','0'])
 
 
-# In[16]:
+# In[313]:
 
 
 Sch_char['Magnet_schl_new'] = Sch_char['Magnet_schl'].replace(['Yes','No'],['1','0'])
 
 
-# In[17]:
+# In[314]:
 
 
 Sch_char['Charter_Schl_new'] = Sch_char['Charter_Schl'].replace(['Yes','No'],['1','0'])
 
 
-# In[18]:
+# In[315]:
 
 
 Sch_char['Alternate_schl_new'] = Sch_char['Alternate_schl'].replace(['Yes','No'],['1','0'])
 
 
-# In[19]:
+# In[316]:
 
 
 Sch_char[['Special_ed_schl_new', 'Magnet_schl_new','Charter_Schl_new','Alternate_schl_new']] = Sch_char[['Special_ed_schl_new', 'Magnet_schl_new','Charter_Schl_new','Alternate_schl_new']].astype(int)
 
 
-# In[20]:
+# #### Checking for missing or null values
+
+# In[317]:
 
 
 sns.heatmap(Sch_char.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# In[21]:
+# In[318]:
 
 
 Sch_char.describe()
 
 
-# In[22]:
+# In[319]:
 
 
-Sch_char.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC/Clean_crdc_schlcharacteristics.csv', index = False, header=True)
+Sch_char.to_csv (r'/Users/dansa/Documents/GitHub/Phase1/Data/CRDC/Clean_crdc_schlcharacteristics.csv', index = False, header=True)
 
 
-# ### Cleaning school expenditure file
+# ### 2. Cleaning school expenditure file
 
-# In[23]:
+# In[320]:
 
 
 Sch_exp = pandas.read_csv("School Expenditures.csv", encoding='cp1252')
 Sch_exp.tail()
 
 
-# In[24]:
+# In[321]:
 
 
 Sch_exp['SCHID'] = Sch_exp['SCHID'].apply(lambda x: '{0:0>5}'.format(x))
 
 
-# In[25]:
+# In[322]:
 
 
 Sch_exp['LEAID'] = Sch_exp['LEAID'].apply(lambda x: '{0:0>7}'.format(x))
 
 
-# In[26]:
+# In[323]:
 
 
 Sch_exp.columns
 
 
-# In[27]:
+# In[324]:
 
 
 Sch_exp.drop(Sch_exp.columns[[7,8,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]], axis=1, inplace=True)
 
 
-# In[28]:
+# In[325]:
 
 
 Sch_exp.head()
 
 
-# In[29]:
+# ##### Since we do not have NCESSCH ID we can impute it using the LEAID and SCHID. 
+
+# In[326]:
 
 
 cols = ['LEAID', 'SCHID']
 Sch_exp['NCESSCH'] = Sch_exp[cols].apply(lambda row: ''.join(row.values.astype(str)), axis=1)
 
 
-# In[30]:
+# In[327]:
 
 
 Sch_exp.shape
 
 
-# In[31]:
+# In[328]:
 
 
 Sch_exp['NCESSCH'].is_unique
 
 
-# In[32]:
+# ##### Renaming columns
+
+# In[329]:
 
 
 Sch_exp.rename(columns={'SCH_FTE_TEACH_WOFED':'FTE_teachers_count','SCH_SAL_TEACH_WOFED':'SalaryforTeachers'}, inplace=True)
 
 
-# In[33]:
+# In[330]:
 
 
 Sch_exp.head()
 
 
-# In[34]:
+# In[331]:
 
 
 #Sch_exp['Teacher_salary_ratio'] = (Sch_exp['SalaryforTeachers'] / Sch_exp['FTE_teachers_count'])
 
 
-# In[35]:
+# #### Checking for missing or null values
+
+# In[332]:
 
 
 sns.heatmap(Sch_exp.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# In[36]:
+# In[333]:
 
 
 Sch_exp.describe()
 
 
-# #### Dropping columns with zero or less than zero Salary expenditures
+# #### Dropping columns with less than zero FTE Teacher counts and Salary expenditures
 
-# In[37]:
-
-
-Sch_exp_clean= Sch_exp[Sch_exp.SalaryforTeachers > 0]
+# In[334]:
 
 
-# In[38]:
+Sch_expTC= Sch_exp[Sch_exp.FTE_teachers_count > 0]
+
+
+# In[335]:
+
+
+Sch_exp_clean= Sch_expTC[Sch_expTC.SalaryforTeachers > 0]
+
+
+# In[336]:
 
 
 Sch_exp_clean.shape
 
 
-# In[39]:
+# In[337]:
 
 
 Sch_exp_clean.describe()
 
 
-# In[40]:
+# In[338]:
 
 
 Sch_exp_clean.head()
 
 
-# In[41]:
+# In[339]:
 
 
 Sch_exp_clean.hist()
 
 
-# In[42]:
+# In[340]:
 
 
-Sch_exp_clean.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC/Clean_crdc_schlexpenses.csv', index = False, header=True)
+Sch_exp_clean.to_csv (r'/Users/dansa/Documents/GitHub/Phase1/Data/CRDC/Clean_crdc_schlexpenses.csv', index = False, header=True)
 
 
-# ### Cleaning school support file
+# ### 3. Cleaning school support file
 
-# In[43]:
+# In[341]:
 
 
 Sch_sup= pandas.read_csv("School Support.csv",encoding='cp1252')
 Sch_sup.head()
 
 
-# In[44]:
+# In[342]:
 
 
 Sch_sup['SCHID'] = Sch_sup['SCHID'].apply(lambda x: '{0:0>5}'.format(x))
 
 
-# In[45]:
+# In[343]:
 
 
 Sch_sup['LEAID'] = Sch_sup['LEAID'].apply(lambda x: '{0:0>7}'.format(x))
 
 
-# In[46]:
+# In[344]:
 
 
 Sch_sup.columns
 
 
-# In[47]:
+# In[345]:
 
 
 Sch_sup.head()
 
 
-# In[48]:
+# ##### Dropping irrelevant columns
+
+# In[346]:
 
 
 Sch_sup.drop(Sch_sup.columns[[7,11,12,13,14,15,16,17,18,19,20,21]], axis=1, inplace=True)
 
 
-# In[49]:
+# In[347]:
 
 
 Sch_sup.head()
 
 
-# In[50]:
+# ##### Since we do not have NCESSCH ID we can impute it using the LEAID and SCHID. 
+
+# In[348]:
 
 
 cols = ['LEAID', 'SCHID']
 Sch_sup['NCESSCH'] = Sch_sup[cols].apply(lambda row: ''.join(row.values.astype(str)), axis=1)
 
 
-# In[51]:
+# In[349]:
 
 
 Sch_sup.shape
 
 
-# In[52]:
+# In[350]:
 
 
 Sch_sup['NCESSCH'].is_unique
 
 
-# In[53]:
+# #### Checking for missing or null values
+
+# In[351]:
 
 
 sns.heatmap(Sch_sup.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# In[54]:
+# In[352]:
 
 
 Sch_sup.describe()
 
 
-# #### Filtering FTE count GT 1 and Cert count GT -5
+# #### Filtering FTE count greater than 1 and Cert count greater than -5
 
-# In[55]:
-
-
-Sch_sup_FTEGT1= Sch_sup[Sch_sup.SCH_FTETEACH_TOT > 0]
+# In[353]:
 
 
-# In[56]:
+Sch_sup_FTEGT1= Sch_sup[Sch_sup.SCH_FTETEACH_TOT > 1]
+
+
+# In[354]:
 
 
 Sch_sup_clean= Sch_sup_FTEGT1[Sch_sup_FTEGT1.SCH_FTETEACH_CERT > -5]
 
 
-# In[57]:
-
-
-Sch_sup_clean.shape
-
-
-# In[58]:
-
-
-Sch_sup_clean.head()
-
-
-# In[59]:
+# In[355]:
 
 
 Sch_sup_clean.describe()
 
 
-# In[60]:
+# In[356]:
+
+
+Sch_sup_clean.shape
+
+
+# In[357]:
+
+
+Sch_sup_clean.head()
+
+
+# In[358]:
+
+
+Sch_sup_clean.describe()
+
+
+# In[359]:
 
 
 Sch_sup_clean.hist()
 
 
-# In[61]:
+# In[360]:
 
 
-Sch_sup_clean.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC/Clean_crdc_schlsupport.csv', index = False, header=True)
+Sch_sup_clean.to_csv (r'/Users/dansa/Documents/GitHub/Phase1/Data/CRDC/Clean_crdc_schlsupport.csv', index = False, header=True)
 
 
-# ### Cleaning SAT and ACT file
+# ### 4. Cleaning SAT and ACT file
 
-# In[62]:
+# In[361]:
 
 
 SAT_ACT = pandas.read_csv("SAT and ACT.csv", encoding='cp1252')
 SAT_ACT.head()
 
 
-# In[63]:
+# In[362]:
 
 
 SAT_ACT['LEAID'] = SAT_ACT['LEAID'].apply(lambda x: '{0:0>7}'.format(x))
 
 
-# In[64]:
+# In[363]:
 
 
 SAT_ACT['SCHID'] = SAT_ACT['SCHID'].apply(lambda x: '{0:0>5}'.format(x))
 
 
-# In[65]:
+# In[364]:
 
 
 SAT_ACT.columns
 
 
-# In[66]:
+# In[365]:
 
 
 SAT_ACT.shape
 
 
-# In[67]:
+# In[366]:
 
 
 SAT_ACT.drop(SAT_ACT.columns[[7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,24,25,26,27]], axis=1, inplace=True)
 
 
-# In[68]:
+# In[367]:
 
 
 SAT_ACT.head()
 
 
-# In[69]:
+# In[368]:
 
 
 cols = ['LEAID', 'SCHID']
@@ -445,513 +482,721 @@ SAT_ACT['NCESSCH'] = SAT_ACT[cols].apply(lambda row: ''.join(row.values.astype(s
 
 # #### Adding total count of male and female participation on ACT and SAT
 
-# In[70]:
+# In[369]:
 
 
 SAT_ACT.rename(columns={'TOT_SATACT_M':'Male_part_count','TOT_SATACT_F':'Female_part_count'}, inplace=True)
 
 
-# In[71]:
-
-
-SAT_ACT['Total_SAT_ACT_students'] = (SAT_ACT['Male_part_count'] + SAT_ACT['Female_part_count'])
-
-
-# In[72]:
-
-
-SAT_ACT.head()
-
-
-# In[73]:
+# In[370]:
 
 
 SAT_ACT.describe()
 
 
-# #### Keeping total counts GT 0
-
-# In[74]:
+# In[371]:
 
 
-SAT_ACT_clean= SAT_ACT[SAT_ACT.Total_SAT_ACT_students > 0]
+SAT_ACTGT0= SAT_ACT.loc[SAT_ACT['Male_part_count'] > 0]
 
 
-# In[75]:
+# In[372]:
+
+
+SAT_ACTGT0.describe()
+
+
+# In[373]:
+
+
+SAT_ACTGT0['Total_SAT_ACT_students'] = (SAT_ACTGT0['Male_part_count'] + SAT_ACTGT0['Female_part_count'])
+
+
+# In[374]:
+
+
+SAT_ACTGT0.describe()
+
+
+# In[375]:
+
+
+SAT_ACTGT0.shape
+
+
+# #### Keeping total counts greater than 0
+
+# In[376]:
+
+
+SAT_ACT_clean= SAT_ACTGT0[SAT_ACTGT0.Total_SAT_ACT_students > 0]
+
+
+# In[377]:
 
 
 SAT_ACT_clean.shape
 
 
-# In[76]:
+# In[378]:
 
 
 SAT_ACT_clean.head()
 
 
-# In[77]:
+# #### Checking for missing or null values
+
+# In[379]:
 
 
 sns.heatmap(SAT_ACT.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# In[78]:
+# In[380]:
 
 
 SAT_ACT_clean.describe()
 
 
-# In[79]:
+# In[381]:
 
 
 SAT_ACT_clean.hist()
 
 
-# In[80]:
+# In[382]:
 
 
-SAT_ACT_clean.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC/Clean_crdc_SAT_ACT.csv', index = False, header=True)
+SAT_ACT_clean.to_csv (r'/Users/dansa/Documents/GitHub/Phase1/Data/CRDC/Clean_crdc_SAT_ACT.csv', index = False, header=True)
 
 
-# ### Cleaning IB file
+# ### 5. Cleaning IB file
 
-# In[81]:
+# In[383]:
 
 
 IB= pandas.read_csv("International Baccalaureate.csv",encoding='cp1252')
 IB.head()
 
 
-# In[82]:
+# In[384]:
 
 
 IB['SCHID'] = IB['SCHID'].apply(lambda x: '{0:0>5}'.format(x))
 
 
-# In[83]:
+# In[385]:
 
 
 IB['LEAID'] = IB['LEAID'].apply(lambda x: '{0:0>7}'.format(x))
 
 
-# In[84]:
+# In[386]:
 
 
 IB.columns
 
 
-# In[85]:
+# In[387]:
 
 
 IB.shape
 
 
-# In[86]:
+# In[388]:
 
 
 IB.drop(IB.columns[[7,9,10,11,12,13,14,15,16,17,18,19,20,21,22,25,26,27,28]], axis=1, inplace=True)
 
 
-# In[87]:
+# In[389]:
 
 
 IB.head()
 
 
-# In[88]:
+# In[390]:
 
 
 cols = ['LEAID', 'SCHID']
 IB['NCESSCH'] = IB[cols].apply(lambda row: ''.join(row.values.astype(str)), axis=1)
 
 
-# In[89]:
+# In[391]:
 
 
 IB.rename(columns={'TOT_IBENR_M':'Male_enroll_count','TOT_IBENR_F':'Female_enroll_count'}, inplace=True)
 
 
-# In[90]:
+# In[392]:
+
+
+IB.describe()
+
+
+# #### Recoding missing values as zero so that total counts can be calculated later
+
+# In[393]:
+
+
+IB['Male_enroll_count'] = IB['Male_enroll_count'].replace(-9,0)
+
+
+# In[394]:
+
+
+IB['Female_enroll_count'] = IB['Female_enroll_count'].replace(-9,0)
+
+
+# In[395]:
+
+
+IB.describe()
+
+
+# In[396]:
 
 
 IB['Total_IB_students'] = (IB['Male_enroll_count'] + IB['Female_enroll_count'])
 
 
+# In[397]:
+
+
+IB.describe()
+
+
+# In[398]:
+
+
+IB.shape
+
+
 # #### Keeping IB program indicator with Y/N
 
-# In[91]:
+# In[399]:
 
 
 IB_clean= IB[IB.SCH_IBENR_IND != '-9']
 
 
-# In[92]:
+# In[400]:
 
 
 IB_clean.shape
 
 
-# In[93]:
+# In[401]:
 
 
 IB_clean.dtypes
 
 
-# In[94]:
+# ##### Recoding string Y/N values to integers 1/0
+
+# In[402]:
 
 
 IB_clean['SCH_IBENR_IND_new'] = IB_clean['SCH_IBENR_IND'].replace(['Yes','No'],['1','0'])
 
 
-# In[95]:
+# In[403]:
 
 
 IB_clean[['SCH_IBENR_IND_new']]=IB_clean[['SCH_IBENR_IND_new']].astype(int)
 
 
-# In[96]:
+# In[404]:
 
 
 IB_clean.head()
 
 
-# In[97]:
+# #### Checking for missing or null values
+
+# In[405]:
 
 
 sns.heatmap(IB_clean.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# In[98]:
+# In[406]:
 
 
 IB_clean.describe()
 
 
-# In[99]:
+# ##### Filtering out negative values
+
+# In[407]:
 
 
-IB_clean.hist()
+IB_clean1= IB_clean[IB_clean.SCH_IBENR_IND != '-6']
 
 
-# In[100]:
+# In[408]:
 
 
-IB_clean.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC/Clean_crdc_IB.csv', index = False, header=True)
+IB_clean2= IB_clean1[IB_clean1.SCH_IBENR_IND != '-5']
 
 
-# ### Cleaning AP file
+# In[409]:
 
-# In[101]:
+
+IB_clean2.describe()
+
+
+# In[410]:
+
+
+IB_clean2.hist()
+
+
+# In[411]:
+
+
+IB_clean2.to_csv (r'/Users/dansa/Documents/GitHub/Phase1/Data/CRDC/Clean_crdc_IB.csv', index = False, header=True)
+
+
+# ### 6. Cleaning AP file
+
+# In[412]:
 
 
 AP = pandas.read_csv("Advanced Placement.csv",encoding='cp1252')
 AP.head()
 
 
-# In[102]:
+# In[413]:
 
 
 AP['SCHID'] = AP['SCHID'].apply(lambda x: '{0:0>5}'.format(x))
 
 
-# In[103]:
+# In[414]:
 
 
 AP['LEAID'] = AP['LEAID'].apply(lambda x: '{0:0>7}'.format(x))
 
 
-# In[104]:
+# In[415]:
 
 
 AP.columns
 
 
-# In[105]:
+# In[416]:
 
 
 AP.shape
 
 
-# In[106]:
+# In[417]:
 
 
 AP=AP[['LEA_STATE', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME', 'SCHID', 'SCH_NAME','COMBOKEY','SCH_APENR_IND','SCH_APCOURSES','SCH_APMATHENR_IND','TOT_APMATHENR_M','TOT_APMATHENR_F','SCH_APOTHENR_IND','TOT_APOTHENR_M','TOT_APOTHENR_F','TOT_APEXAM_ONEORMORE_M','TOT_APEXAM_ONEORMORE_F']]
 
 
-# In[107]:
+# In[418]:
 
 
 AP.shape
 
 
-# In[108]:
+# In[419]:
 
 
 AP.head()
 
 
-# In[109]:
+# In[420]:
 
 
 cols = ['LEAID', 'SCHID']
 AP['NCESSCH'] = AP[cols].apply(lambda row: ''.join(row.values.astype(str)), axis=1)
 
 
-# In[110]:
+# In[421]:
 
 
 AP.rename(columns={'TOT_APMATHENR_M':'Male_enroll_math_count','TOT_APMATHENR_F':'Female_enroll_math_count','TOT_APOTHENR_M':'Male_enroll_other_count','TOT_APOTHENR_F':'Female_enroll_other_count'}, inplace=True)
 
 
-# In[111]:
+# In[422]:
+
+
+AP.describe()
+
+
+# In[423]:
+
+
+AP.shape
+
+
+# In[424]:
+
+
+AP= AP[AP.SCH_APENR_IND.isin(['Yes','No'])]
+
+
+# In[425]:
+
+
+AP.shape
+
+
+# In[426]:
+
+
+AP.describe()
+
+
+# ##### If AP enrollment indicator is a No, then the corresponding columns for courses and student counts are marked a -9. So lets replace -9 with 0 counts for schools that don't have any AP enrollment indicators
+
+# In[427]:
+
+
+AP['SCH_APCOURSES'] = AP['SCH_APCOURSES'].replace(-9,0)
+
+
+# In[428]:
+
+
+AP['Male_enroll_math_count'] = AP['Male_enroll_math_count'].replace(-9,0)
+
+
+# In[429]:
+
+
+AP['Female_enroll_math_count'] = AP['Female_enroll_math_count'].replace(-9,0)
+
+
+# In[430]:
+
+
+AP['Male_enroll_other_count'] = AP['Male_enroll_other_count'].replace(-9,0)
+
+
+# In[431]:
+
+
+AP['Female_enroll_other_count'] = AP['Female_enroll_other_count'].replace(-9,0)
+
+
+# In[432]:
+
+
+AP['TOT_APEXAM_ONEORMORE_M'] = AP['TOT_APEXAM_ONEORMORE_M'].replace(-9,0)
+
+
+# In[433]:
+
+
+AP['TOT_APEXAM_ONEORMORE_F'] = AP['TOT_APEXAM_ONEORMORE_F'].replace(-9,0)
+
+
+# Total counts of M and F
+
+# In[434]:
 
 
 AP['Total_AP_math_students'] = (AP['Male_enroll_math_count'] + AP['Female_enroll_math_count'])
 
 
-# In[112]:
+# In[435]:
 
 
 AP['Total_AP_other_students'] = (AP['Male_enroll_other_count'] + AP['Female_enroll_other_count'])
 
 
-# In[113]:
+# In[436]:
 
 
 AP['Total_students_tookAP'] = (AP['TOT_APEXAM_ONEORMORE_M'] + AP['TOT_APEXAM_ONEORMORE_F'])
 
 
-# In[114]:
+# In[437]:
 
 
 AP.columns
 
 
-# In[115]:
+# In[438]:
 
 
 AP_math=AP[['LEA_STATE', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME', 'SCHID', 'SCH_NAME','COMBOKEY','NCESSCH','SCH_APENR_IND', 'SCH_APCOURSES', 'SCH_APMATHENR_IND',
        'Total_AP_math_students','Total_students_tookAP']]
 
 
-# In[116]:
+# In[439]:
 
 
-AP_math_clean= AP_math[AP_math.SCH_APENR_IND.isin(['Yes','No'])]
+AP_math.describe()
 
 
-# In[117]:
+# #### Filtering out any ligering negative values that indicate missing not N/As
+
+# In[440]:
 
 
-AP_math_clean.shape
+AP_math_clean= AP_math.loc[AP_math['SCH_APCOURSES'] > -1]
 
 
-# In[118]:
+# In[441]:
 
 
-AP_math_clean.dtypes
+AP_math_clean= AP_math_clean.loc[AP_math_clean['Total_AP_math_students'] > -1]
 
 
-# In[119]:
+# In[442]:
 
 
-AP_math_clean['SCH_APENR_IND_new'] = AP_math_clean['SCH_APENR_IND'].replace(['Yes','No'],['1','0'])
+AP_math_clean= AP_math_clean.loc[AP_math_clean['Total_students_tookAP'] > -1]
 
 
-# In[120]:
-
-
-AP_math_clean[['SCH_APENR_IND_new']] = AP_math_clean[['SCH_APENR_IND_new']].astype(int)
-
-
-# In[121]:
-
-
-AP_math_clean['SCH_APMATHENR_IND_new'] = AP_math_clean['SCH_APMATHENR_IND'].replace(['Yes','No'],['1','0'])
-
-
-# In[122]:
-
-
-AP_math_clean[['SCH_APMATHENR_IND_new']] = AP_math_clean[['SCH_APMATHENR_IND_new']].astype(int)
-
-
-# In[123]:
-
-
-AP_math_clean.dtypes
-
-
-# In[124]:
-
-
-sns.heatmap(AP_math_clean.isnull(),yticklabels=False,cbar=True,cmap='viridis')
-
-
-# In[125]:
+# In[443]:
 
 
 AP_math_clean.describe()
 
 
-# In[126]:
+# In[444]:
+
+
+AP_math_clean.shape
+
+
+# In[445]:
+
+
+AP_math_clean.dtypes
+
+
+# ##### Recoding string Y/N values to integers 1/0
+
+# In[446]:
+
+
+AP_math_clean['SCH_APENR_IND_new'] = AP_math_clean['SCH_APENR_IND'].replace(['Yes','No'],['1','0'])
+
+
+# In[447]:
+
+
+AP_math_clean[['SCH_APENR_IND_new']] = AP_math_clean[['SCH_APENR_IND_new']].astype(int)
+
+
+# In[448]:
+
+
+AP_math_clean['SCH_APMATHENR_IND_new'] = AP_math_clean['SCH_APMATHENR_IND'].replace(['Yes','No','-9'],['1','0','0'])
+
+
+# In[449]:
+
+
+AP_math_clean[['SCH_APMATHENR_IND_new']] = AP_math_clean[['SCH_APMATHENR_IND_new']].astype(int)
+
+
+# In[450]:
+
+
+AP_math_clean.dtypes
+
+
+# #### Checking for missing or null values
+
+# In[451]:
+
+
+sns.heatmap(AP_math_clean.isnull(),yticklabels=False,cbar=True,cmap='viridis')
+
+
+# In[452]:
+
+
+AP_math_clean.describe()
+
+
+# In[453]:
 
 
 AP_math_clean.hist()
 
 
-# In[127]:
+# In[454]:
 
 
-AP_math_clean.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC/Clean_crdc_AP_math.csv', index = False, header=True)
+AP_math_clean.to_csv (r'/Users/dansa/Documents/GitHub/Phase1/Data/CRDC/Clean_crdc_AP_math.csv', index = False, header=True)
 
 
-# In[128]:
+# In[455]:
 
 
 AP_other=AP[['LEA_STATE', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME', 'SCHID', 'SCH_NAME','COMBOKEY','NCESSCH','SCH_APENR_IND', 'SCH_APCOURSES', 'SCH_APOTHENR_IND',
        'Total_AP_other_students', 'Total_students_tookAP']]
 
 
-# In[129]:
+# In[456]:
 
 
 AP_other_clean= AP_other[AP_other.SCH_APENR_IND.isin(['Yes','No'])]
 
 
-# In[130]:
+# In[457]:
 
 
 AP_other_clean.shape
 
 
-# In[131]:
+# In[458]:
 
 
 AP_other_clean.dtypes
 
 
-# In[132]:
+# In[459]:
 
 
 count_other = AP_other_clean['SCH_APOTHENR_IND'].value_counts() 
 print(count_other) 
 
 
-# In[133]:
+# ##### Recoding string Y/N values to integers 1/0
+
+# In[460]:
 
 
 AP_other_clean['SCH_APENR_IND_new'] = AP_other_clean['SCH_APENR_IND'].replace(['Yes','No'],['1','0'])
 
 
-# In[134]:
+# In[461]:
 
 
 AP_other_clean[['SCH_APENR_IND_new']] = AP_other_clean[['SCH_APENR_IND_new']].astype(int)
 
 
-# In[135]:
+# In[462]:
 
 
-AP_other_clean['SCH_APOTHENR_IND_new'] = AP_other_clean['SCH_APOTHENR_IND'].replace(['Yes','No'],['1','0'])
+AP_other_clean['SCH_APOTHENR_IND_new'] = AP_other_clean['SCH_APOTHENR_IND'].replace(['Yes','No','-9'],['1','0','0'])
 
 
-# In[136]:
+# In[463]:
 
 
 AP_other_clean[['SCH_APOTHENR_IND_new']] = AP_other_clean[['SCH_APOTHENR_IND_new']].astype(int)
 
 
-# In[137]:
+# In[464]:
 
 
 AP_other_clean.dtypes
 
 
-# In[138]:
+# In[465]:
 
 
 sns.heatmap(AP_other_clean.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# In[139]:
+# In[466]:
 
 
 AP_other_clean.describe()
 
 
-# In[140]:
+# In[467]:
+
+
+AP_other_clean1= AP_other_clean.loc[AP_other_clean['SCH_APCOURSES'] > -1]
+
+
+# In[468]:
+
+
+AP_other_clean2= AP_other_clean1.loc[AP_other_clean1['Total_students_tookAP'] > -1]
+
+
+# In[469]:
+
+
+AP_other_clean2.describe()
+
+
+# In[470]:
 
 
 AP_other_clean.hist()
 
 
-# In[141]:
+# In[471]:
 
 
-AP_other_clean.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC/Clean_crdc_AP_other.csv', index = False, header=True)
+AP_other_clean.to_csv (r'/Users/dansa/Documents/GitHub/Phase1/Data/CRDC/Clean_crdc_AP_other.csv', index = False, header=True)
 
 
-# ### Cleaning Algebra 1 file
+# ### 7. Cleaning Algebra 1 file
 
-# In[142]:
+# In[472]:
 
 
 Alg1 = pandas.read_csv("Algebra I.csv",encoding='cp1252')
 Alg1.head()
 
 
-# In[143]:
+# In[473]:
 
 
 Alg1['SCHID'] = Alg1['SCHID'].apply(lambda x: '{0:0>5}'.format(x))
 
 
-# In[144]:
+# In[474]:
 
 
 Alg1['LEAID'] = Alg1['LEAID'].apply(lambda x: '{0:0>7}'.format(x))
 
 
-# In[145]:
+# In[475]:
 
 
 Alg1.columns
 
 
-# In[146]:
+# In[476]:
 
 
 Alg1.shape
 
 
-# In[147]:
+# In[477]:
 
 
 Alg1=Alg1[['LEA_STATE', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME', 'SCHID', 'SCH_NAME','COMBOKEY','SCH_MATHCLASSES_ALG','SCH_MATHCERT_ALG','TOT_ALGENR_GS0910_M',
            'TOT_ALGENR_GS0910_F','TOT_ALGENR_GS1112_M','TOT_ALGENR_GS1112_F','TOT_ALGPASS_GS0910_M','TOT_ALGPASS_GS0910_F','TOT_ALGPASS_GS1112_M','TOT_ALGPASS_GS1112_F']]
 
 
-# In[148]:
+# In[478]:
 
 
 Alg1.shape
 
 
-# In[149]:
+# In[479]:
 
 
 Alg1.head()
 
 
-# In[150]:
+# In[480]:
 
 
 cols = ['LEAID', 'SCHID']
 Alg1['NCESSCH'] = Alg1[cols].apply(lambda row: ''.join(row.values.astype(str)), axis=1)
 
 
-# In[151]:
+# In[481]:
 
 
 Alg1.rename(columns={'TOT_ALGENR_GS0910_M':'Male_enroll_9to10_count','TOT_ALGENR_GS0910_F':'Female_enroll_9to10_count','TOT_ALGENR_GS1112_M':'Male_enroll_11to12_count',
@@ -959,25 +1204,83 @@ Alg1.rename(columns={'TOT_ALGENR_GS0910_M':'Male_enroll_9to10_count','TOT_ALGENR
                   'TOT_ALGPASS_GS1112_M':'Male_pass_11to12_count','TOT_ALGPASS_GS1112_F':'Female_pass_11to12_count'}, inplace=True)
 
 
-# In[152]:
+# In[482]:
 
 
 Alg1.columns
 
 
-# In[153]:
+# In[483]:
+
+
+Alg1.describe()
+
+
+# ##### Lets replace -9 with 0 counts for enrollment counts so we can total values later
+
+# In[484]:
+
+
+Alg1['Male_enroll_9to10_count'] = Alg1['Male_enroll_9to10_count'].replace(-9,0)
+
+
+# In[485]:
+
+
+Alg1['Female_enroll_9to10_count'] = Alg1['Female_enroll_9to10_count'].replace(-9,0)
+
+
+# In[486]:
+
+
+Alg1['Male_enroll_11to12_count'] = Alg1['Male_enroll_11to12_count'].replace(-9,0)
+
+
+# In[487]:
+
+
+Alg1['Female_enroll_11to12_count'] = Alg1['Female_enroll_11to12_count'].replace(-9,0)
+
+
+# In[488]:
+
+
+Alg1['Male_pass_9to10_count'] = Alg1['Male_pass_9to10_count'].replace(-9,0)
+
+
+# In[489]:
+
+
+Alg1['Female_pass_9to10_count'] = Alg1['Female_pass_9to10_count'].replace(-9,0)
+
+
+# In[490]:
+
+
+Alg1['Male_pass_11to12_count'] = Alg1['Male_pass_11to12_count'].replace(-9,0)
+
+
+# In[491]:
+
+
+Alg1['Female_pass_11to12_count'] = Alg1['Female_pass_11to12_count'].replace(-9,0)
+
+
+# Total counts of M and F
+
+# In[492]:
 
 
 Alg1['Total_Alg1_enroll_students'] = (Alg1['Male_enroll_9to10_count'] + Alg1['Female_enroll_9to10_count'] + Alg1['Male_enroll_11to12_count'] + Alg1['Female_enroll_11to12_count'])
 
 
-# In[154]:
+# In[493]:
 
 
 Alg1['Total_Alg1_pass_students'] = (Alg1['Male_pass_9to10_count'] + Alg1['Female_pass_9to10_count'] + Alg1['Male_pass_11to12_count'] + Alg1['Female_pass_11to12_count'])
 
 
-# In[155]:
+# In[494]:
 
 
 Alg1=Alg1[['LEA_STATE', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME', 'SCHID', 'SCH_NAME',
@@ -985,528 +1288,213 @@ Alg1=Alg1[['LEA_STATE', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME', 'SCHID', 'SCH_NAM
        'Total_Alg1_enroll_students', 'Total_Alg1_pass_students']]
 
 
-# In[156]:
+# In[495]:
 
 
 Alg1_clean= Alg1[Alg1.SCH_MATHCLASSES_ALG > 0]
 
 
-# In[157]:
+# In[496]:
 
 
 Alg1_clean.shape
 
 
-# In[158]:
-
-
-sns.heatmap(Alg1_clean.isnull(),yticklabels=False,cbar=True,cmap='viridis')
-
-
-# In[159]:
+# In[497]:
 
 
 Alg1_clean.describe()
 
 
-# In[160]:
+# #### Checking for missing or null values
+
+# In[498]:
+
+
+sns.heatmap(Alg1_clean.isnull(),yticklabels=False,cbar=True,cmap='viridis')
+
+
+# In[499]:
+
+
+Alg1_clean.describe()
+
+
+# In[500]:
 
 
 Alg1_clean.hist()
 
 
-# In[161]:
+# In[501]:
 
 
-Alg1_clean.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC/Clean_crdc_Alg1.csv', index = False, header=True)
+Alg1_clean.to_csv (r'/Users/dansa/Documents/GitHub/Phase1/Data/CRDC/Clean_crdc_Alg1.csv', index = False, header=True)
 
 
-# ### Cleaning Algebra 2 file
+# ### 8. Cleaning Enrollment file
 
-# In[162]:
-
-
-Alg2 = pandas.read_csv("Algebra II.csv",encoding='cp1252')
-Alg2.head()
-
-
-# In[163]:
-
-
-Alg2['SCHID'] = Alg2['SCHID'].apply(lambda x: '{0:0>5}'.format(x))
-
-
-# In[164]:
-
-
-Alg2['LEAID'] = Alg2['LEAID'].apply(lambda x: '{0:0>7}'.format(x))
-
-
-# In[165]:
-
-
-Alg2.columns
-
-
-# In[166]:
-
-
-Alg2.shape
-
-
-# In[167]:
-
-
-Alg2=Alg2[['LEA_STATE', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME', 'SCHID', 'SCH_NAME','COMBOKEY','SCH_MATHCLASSES_ALG2', 'SCH_MATHCERT_ALG2','TOT_MATHENR_ALG2_M',
-       'TOT_MATHENR_ALG2_F']]
-
-
-# In[168]:
-
-
-Alg2.shape
-
-
-# In[169]:
-
-
-Alg2.head()
-
-
-# In[170]:
-
-
-cols = ['LEAID', 'SCHID']
-Alg2['NCESSCH'] = Alg2[cols].apply(lambda row: ''.join(row.values.astype(str)), axis=1)
-
-
-# In[171]:
-
-
-Alg2.rename(columns={'TOT_MATHENR_ALG2_M':'Male_enroll_Alg2_count','TOT_MATHENR_ALG2_F':'Female_enroll_Alg2_count'}, inplace=True)
-
-
-# In[172]:
-
-
-Alg2.columns
-
-
-# In[173]:
-
-
-Alg2['Total_Alg2_enroll_students'] = (Alg2['Male_enroll_Alg2_count'] + Alg2['Female_enroll_Alg2_count'])
-
-
-# In[174]:
-
-
-Alg2=Alg2[['LEA_STATE', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME', 'SCHID', 'SCH_NAME',
-       'COMBOKEY', 'SCH_MATHCLASSES_ALG2', 'SCH_MATHCERT_ALG2', 'NCESSCH',
-       'Total_Alg2_enroll_students']]
-
-
-# In[175]:
-
-
-Alg2_clean= Alg2[Alg2.SCH_MATHCLASSES_ALG2 > 0]
-
-
-# In[176]:
-
-
-Alg2_clean.shape
-
-
-# In[177]:
-
-
-sns.heatmap(Alg2_clean.isnull(),yticklabels=False,cbar=True,cmap='viridis')
-
-
-# In[178]:
-
-
-Alg2_clean.describe()
-
-
-# In[179]:
-
-
-Alg2_clean.hist()
-
-
-# In[180]:
-
-
-Alg2_clean.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC/Clean_crdc_Alg2.csv', index = False, header=True)
-
-
-# ### Cleaning Calculus file
-
-# In[181]:
-
-
-Calculus = pandas.read_csv("Calculus.csv",encoding='cp1252')
-Calculus.head()
-
-
-# In[182]:
-
-
-Calculus['SCHID'] = Calculus['SCHID'].apply(lambda x: '{0:0>5}'.format(x))
-
-
-# In[183]:
-
-
-Calculus['LEAID'] = Calculus['LEAID'].apply(lambda x: '{0:0>7}'.format(x))
-
-
-# In[184]:
-
-
-Calculus.columns
-
-
-# In[185]:
-
-
-Calculus.shape
-
-
-# In[186]:
-
-
-Calculus=Calculus[[' "LEA_STATE"', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME', 'SCHID', 'SCH_NAME','COMBOKEY','SCH_MATHCLASSES_CALC','SCH_MATHCERT_CALC','TOT_MATHENR_CALC_M','TOT_MATHENR_CALC_F']]
-
-
-# In[187]:
-
-
-Calculus.shape
-
-
-# In[188]:
-
-
-cols = ['LEAID', 'SCHID']
-Calculus['NCESSCH'] = Calculus[cols].apply(lambda row: ''.join(row.values.astype(str)), axis=1)
-
-
-# In[189]:
-
-
-Calculus['Total_Calc_enroll_students'] = (Calculus['TOT_MATHENR_CALC_M'] + Calculus['TOT_MATHENR_CALC_M'])
-
-
-# In[190]:
-
-
-Calculus.columns
-
-
-# In[191]:
-
-
-Calculus=Calculus[[' "LEA_STATE"', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME', 'SCHID', 'SCH_NAME','COMBOKEY','NCESSCH','SCH_MATHCLASSES_CALC','SCH_MATHCERT_CALC','Total_Calc_enroll_students']]
-
-
-# In[192]:
-
-
-Calculus_clean=Calculus[Calculus.SCH_MATHCLASSES_CALC > 0]
-
-
-# In[193]:
-
-
-Calculus_clean.shape
-
-
-# In[194]:
-
-
-sns.heatmap(Calculus_clean.isnull(),yticklabels=False,cbar=True,cmap='viridis')
-
-
-# In[195]:
-
-
-Calculus_clean.describe()
-
-
-# In[196]:
-
-
-Calculus_clean.hist()
-
-
-# In[197]:
-
-
-Calculus_clean.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC/Clean_crdc_calculus.csv', index = False,header=True)
-
-
-# ### Cleaning Geometry file
-
-# In[198]:
-
-
-Geometry = pandas.read_csv("Geometry.csv",encoding='cp1252')
-Geometry.head()
-
-
-# In[199]:
-
-
-Geometry['SCHID'] = Geometry['SCHID'].apply(lambda x: '{0:0>5}'.format(x))
-
-
-# In[200]:
-
-
-Geometry['LEAID'] = Geometry['LEAID'].apply(lambda x: '{0:0>7}'.format(x))
-
-
-# In[201]:
-
-
-Geometry.columns
-
-
-# In[202]:
-
-
-Geometry.shape
-
-
-# In[203]:
-
-
-Geometry=Geometry[['LEA_STATE', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME', 'SCHID', 'SCH_NAME','COMBOKEY','SCH_MATHCERT_GEOM','SCH_MATHCLASSES_GEOM','TOT_MATHENR_GEOM_M','TOT_MATHENR_GEOM_F']]
-
-
-# In[204]:
-
-
-Geometry.shape
-
-
-# In[205]:
-
-
-cols = ['LEAID', 'SCHID']
-Geometry['NCESSCH'] = Geometry[cols].apply(lambda row: ''.join(row.values.astype(str)), axis=1)
-
-
-# In[206]:
-
-
-Geometry['Total_Geomty_enroll_students'] = (Geometry['TOT_MATHENR_GEOM_M'] + Geometry['TOT_MATHENR_GEOM_F'])
-
-
-# In[207]:
-
-
-Geometry.columns
-
-
-# In[208]:
-
-
-Geometry=Geometry[['LEA_STATE', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME', 'SCHID', 'SCH_NAME','COMBOKEY','NCESSCH','SCH_MATHCERT_GEOM','SCH_MATHCLASSES_GEOM','Total_Geomty_enroll_students']]
-
-
-# In[209]:
-
-
-Geometry_clean=Geometry[Geometry.SCH_MATHCLASSES_GEOM > 0]
-
-
-# In[210]:
-
-
-sns.heatmap(Geometry_clean.isnull(),yticklabels=False,cbar=True,cmap='viridis')
-
-
-# In[211]:
-
-
-Geometry_clean.describe()
-
-
-# In[212]:
-
-
-Geometry_clean.hist()
-
-
-# In[213]:
-
-
-Geometry_clean.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC/Clean_crdc_geometry.csv', index = False,header=True)
-
-
-# ### Cleaning Enrollment file
-
-# In[214]:
+# In[502]:
 
 
 Enroll = pandas.read_csv("Enrollment.csv",encoding='cp1252')
 Enroll.head()
 
 
-# In[215]:
+# In[503]:
 
 
 Enroll['SCHID'] = Enroll['SCHID'].apply(lambda x: '{0:0>5}'.format(x))
 
 
-# In[216]:
+# In[504]:
 
 
 Enroll['LEAID'] = Enroll['LEAID'].apply(lambda x: '{0:0>7}'.format(x))
 
 
-# In[217]:
+# In[505]:
 
 
 Enroll.columns
 
 
-# In[218]:
+# In[506]:
 
 
 Enroll.shape
 
 
-# In[219]:
+# In[507]:
 
 
 Enroll=Enroll[['LEA_STATE', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME', 'SCHID', 'SCH_NAME','COMBOKEY','TOT_ENR_M','TOT_ENR_F']]
 
 
-# In[220]:
+# In[508]:
 
 
 Enroll.shape
 
 
-# In[221]:
+# In[509]:
 
 
 cols = ['LEAID', 'SCHID']
 Enroll['NCESSCH'] = Enroll[cols].apply(lambda row: ''.join(row.values.astype(str)), axis=1)
 
 
-# In[222]:
+# In[510]:
 
 
 Enroll['Total_enroll_students'] = (Enroll['TOT_ENR_M'] + Enroll['TOT_ENR_F'])
 
 
-# In[223]:
+# In[511]:
 
 
 Enroll.columns
 
 
-# In[224]:
+# In[512]:
 
 
 Enroll=Enroll[['LEA_STATE', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME', 'SCHID', 'SCH_NAME','COMBOKEY','NCESSCH','Total_enroll_students']]
 
 
-# In[225]:
+# #### Excluding schools with 0 enrollment counts
+
+# In[513]:
 
 
 Enroll_clean=Enroll[Enroll.Total_enroll_students > 0]
 
 
-# In[226]:
+# In[514]:
 
 
 Enroll_clean.shape
 
 
-# In[227]:
+# #### Checking for missing or null values
+
+# In[515]:
 
 
 sns.heatmap(Enroll_clean.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# In[228]:
+# In[516]:
 
 
 Enroll_clean.describe()
 
 
-# In[229]:
+# In[517]:
 
 
 Enroll_clean.hist()
 
 
-# In[230]:
+# In[518]:
 
 
-Enroll_clean.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC/Clean_crdc_enrollment.csv', index = False,header=True)
+Enroll_clean.to_csv (r'/Users/dansa/Documents/GitHub/Phase1/Data/CRDC/Clean_crdc_enrollment.csv', index = False,header=True)
 
 
-# #### Merge CRDC master with CCD directory to extract only high schools
+# #### 9. Merge CRDC school characteristics with CCD directory to extract only high schools
 
-# In[231]:
-
-
-cd /Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CCD
+# In[519]:
 
 
-# In[232]:
+cd /Users/dansa/Documents/GitHub/Phase1/Data/CCD
+
+
+# In[520]:
 
 
 ccd_directory= pandas.read_csv("Clean_ccd_directory.csv")
 ccd_directory.head()
 
 
-# In[233]:
+# In[521]:
 
 
 ccd_directory['NCESSCH'] = ccd_directory['NCESSCH'].apply(lambda x: '{0:0>12}'.format(x))
 
 
-# In[234]:
+# In[522]:
 
 
 ccd_directory.drop(ccd_directory.columns[[4,5,6,10,11]], axis=1, inplace=True)
 
 
-# In[235]:
+# In[523]:
 
 
 ccd_directory.shape
 
 
-# In[236]:
+# In[524]:
 
 
 Sch_char_merged_ccd = pandas.merge(left=Sch_char,right=ccd_directory, how='left', left_on='NCESSCH', right_on='NCESSCH')
 Sch_char_merged_ccd.shape
 
 
-# In[237]:
+# In[525]:
 
 
 Sch_char_merged_ccd.head()
 
 
-# In[238]:
+# In[526]:
 
 
 sns.heatmap(Sch_char_merged_ccd.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# In[239]:
+# In[527]:
 
 
 null_columns=Sch_char_merged_ccd.columns[Sch_char_merged_ccd.isnull().any()]
@@ -1515,97 +1503,97 @@ Sch_char_merged_ccd[null_columns].isnull().sum()
 
 # #### Keeping only high schools
 
-# In[240]:
+# In[528]:
 
 
 Sch_char_hs=Sch_char_merged_ccd[Sch_char_merged_ccd['LEVEL']=='High' ]
 
 
-# In[241]:
+# In[529]:
 
 
 sns.heatmap(Sch_char_hs.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# In[242]:
+# In[530]:
 
 
 Sch_char_hs.shape
 
 
-# In[243]:
+# In[531]:
 
 
 Sch_char_hs.columns
 
 
-# In[244]:
+# In[532]:
 
 
 Sch_char_hs.head()
 
 
-# In[317]:
+# In[533]:
 
 
 Sch_char_hs.drop([col for col in Sch_char_hs.columns if col.endswith('_y')],axis=1,inplace=True)
 
 
-# In[318]:
+# In[534]:
 
 
 HS_Sch_char=Sch_char_hs[['LEA_STATE', 'LEA_STATE_NAME', 'LEAID', 'LEA_NAME_x', 'SCHID_x','SCH_NAME_x','COMBOKEY','Special_ed_schl_new',
        'Magnet_schl_new', 'Charter_Schl_new', 'Alternate_schl_new', 'NCESSCH','LEVEL']]
 
 
-# In[319]:
+# In[535]:
 
 
 HS_Sch_char.shape
 
 
-# #### Merge remaining CRDC clean files
+# #### 10. Merge remaining CRDC clean files
 
 # ##### Merging with school enroll
 
-# In[320]:
+# In[536]:
 
 
 HS_Sch_char_merged_enroll = pandas.merge(left=HS_Sch_char,right=Enroll_clean, how='left', left_on='NCESSCH', right_on='NCESSCH')
 HS_Sch_char_merged_enroll.shape
 
 
-# In[321]:
+# In[537]:
 
 
 HS_Sch_char_merged_enroll.columns
 
 
-# In[322]:
+# In[538]:
 
 
 #HS_Sch_char_merged_exp.head()
 
 
-# In[323]:
+# In[539]:
 
 
 HS_Sch_char_merged_enroll.drop([col for col in HS_Sch_char_merged_enroll.columns if col.endswith('_y')],axis=1,inplace=True)
 
 
-# In[324]:
+# In[540]:
 
 
 HS_Sch_char_merged_enroll.columns
 
 
-# In[325]:
+# In[541]:
 
 
 HS_Sch_char_merged_enroll.shape
 
 
-# In[388]:
+# In[542]:
 
 
 HS_Sch_char_enroll=HS_Sch_char_merged_enroll[['LEA_STATE_x', 'LEA_STATE_NAME_x', 'LEAID_x', 'LEA_NAME_x', 'SCHID_x',
@@ -1614,26 +1602,26 @@ HS_Sch_char_enroll=HS_Sch_char_merged_enroll[['LEA_STATE_x', 'LEA_STATE_NAME_x',
 
 # ##### Merging with school support
 
-# In[389]:
+# In[543]:
 
 
 HS_Sch_char_enroll_merged_sup = pandas.merge(left=HS_Sch_char_enroll,right=Sch_sup_clean, how='left', left_on='NCESSCH', right_on='NCESSCH')
 HS_Sch_char_enroll_merged_sup.shape
 
 
-# In[390]:
+# In[544]:
 
 
 HS_Sch_char_enroll_merged_sup.columns
 
 
-# In[391]:
+# In[545]:
 
 
 HS_Sch_char_enroll_merged_sup.head()
 
 
-# In[450]:
+# In[546]:
 
 
 HS_Sch_char_enroll_sup=HS_Sch_char_enroll_merged_sup[['LEA_STATE_x', 'LEA_STATE_NAME_x', 'LEAID_x', 'LEA_NAME_x', 'SCHID_x',
@@ -1641,7 +1629,7 @@ HS_Sch_char_enroll_sup=HS_Sch_char_enroll_merged_sup[['LEA_STATE_x', 'LEA_STATE_
        'SCH_FTETEACH_CERT', 'SCH_FTETEACH_NOTCERT']]
 
 
-# In[451]:
+# In[547]:
 
 
 HS_Sch_char_enroll_sup.shape
@@ -1649,26 +1637,26 @@ HS_Sch_char_enroll_sup.shape
 
 # ##### Merging with school expenditures
 
-# In[452]:
+# In[548]:
 
 
 HS_Sch_char_enroll_sup_merged_exp = pandas.merge(left=HS_Sch_char_enroll_sup,right=Sch_exp_clean, how='left', left_on='NCESSCH', right_on='NCESSCH')
 HS_Sch_char_enroll_sup_merged_exp.shape
 
 
-# In[453]:
+# In[549]:
 
 
 HS_Sch_char_enroll_sup_merged_exp.columns
 
 
-# In[454]:
+# In[550]:
 
 
 HS_Sch_char_enroll_sup_merged_exp.head()
 
 
-# In[455]:
+# In[551]:
 
 
 HS_Sch_char_enroll_sup_exp=HS_Sch_char_enroll_sup_merged_exp[['LEA_STATE_x', 'LEA_STATE_NAME_x', 'LEAID_x', 'LEA_NAME_x', 'SCHID_x',
@@ -1676,7 +1664,7 @@ HS_Sch_char_enroll_sup_exp=HS_Sch_char_enroll_sup_merged_exp[['LEA_STATE_x', 'LE
        'SCH_FTETEACH_CERT', 'SCH_FTETEACH_NOTCERT','FTE_teachers_count','SalaryforTeachers']]
 
 
-# In[456]:
+# In[552]:
 
 
 HS_Sch_char_enroll_sup_exp.shape
@@ -1684,26 +1672,26 @@ HS_Sch_char_enroll_sup_exp.shape
 
 # ##### Merging with SAT_ACT
 
-# In[457]:
+# In[553]:
 
 
 HS_Sch_char_enroll_sup_exp_merged_SA = pandas.merge(left=HS_Sch_char_enroll_sup_exp,right=SAT_ACT_clean, how='left', left_on='NCESSCH', right_on='NCESSCH')
 HS_Sch_char_enroll_sup_exp_merged_SA.shape
 
 
-# In[458]:
+# In[554]:
 
 
 HS_Sch_char_enroll_sup_exp_merged_SA.columns
 
 
-# In[459]:
+# In[555]:
 
 
 HS_Sch_char_enroll_sup_exp_merged_SA.head()
 
 
-# In[460]:
+# In[556]:
 
 
 HS_Sch_char_enroll_sup_exp_SA=HS_Sch_char_enroll_sup_exp_merged_SA[['LEA_STATE_x', 'LEA_STATE_NAME_x', 'LEAID_x', 'LEA_NAME_x', 'SCHID_x',
@@ -1711,7 +1699,7 @@ HS_Sch_char_enroll_sup_exp_SA=HS_Sch_char_enroll_sup_exp_merged_SA[['LEA_STATE_x
        'SCH_FTETEACH_CERT', 'SCH_FTETEACH_NOTCERT','FTE_teachers_count','SalaryforTeachers','Total_SAT_ACT_students']]
 
 
-# In[461]:
+# In[557]:
 
 
 HS_Sch_char_enroll_sup_exp_SA.shape
@@ -1719,26 +1707,26 @@ HS_Sch_char_enroll_sup_exp_SA.shape
 
 # ##### Merging with IB
 
-# In[462]:
+# In[558]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_merged_IB = pandas.merge(left=HS_Sch_char_enroll_sup_exp_SA,right=IB_clean, how='left', left_on='NCESSCH', right_on='NCESSCH')
 HS_Sch_char_enroll_sup_exp_SA_merged_IB.shape
 
 
-# In[463]:
+# In[559]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_merged_IB.columns
 
 
-# In[464]:
+# In[560]:
 
 
 #HS_Sch_char_enroll_sup_exp_SA_merged_IB.head()
 
 
-# In[465]:
+# In[561]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_IB=HS_Sch_char_enroll_sup_exp_SA_merged_IB[['LEA_STATE_x', 'LEA_STATE_NAME_x', 'LEAID_x', 'LEA_NAME_x', 'SCHID_x',
@@ -1747,34 +1735,36 @@ HS_Sch_char_enroll_sup_exp_SA_IB=HS_Sch_char_enroll_sup_exp_SA_merged_IB[['LEA_S
        'Total_SAT_ACT_students','SCH_IBENR_IND_new','Total_IB_students']]
 
 
-# In[466]:
+# In[562]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_IB.shape
 
 
+# #### For AP there are columns that are specific to math and reading so lets only include the relevant columns for each subject area
+
 # ##### Merging with AP other
 
-# In[467]:
+# In[563]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_IB_merged_AP_other = pandas.merge(left=HS_Sch_char_enroll_sup_exp_SA_IB,right=AP_other_clean, how='left', left_on='NCESSCH', right_on='NCESSCH')
 HS_Sch_char_enroll_sup_exp_SA_IB_merged_AP_other.shape
 
 
-# In[468]:
+# In[564]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_IB_merged_AP_other.columns
 
 
-# In[469]:
+# In[565]:
 
 
 #HS_Sch_char_enroll_sup_exp_SA_IB_merged_AP_other.head()
 
 
-# In[470]:
+# In[566]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_IB_AP_other=HS_Sch_char_enroll_sup_exp_SA_IB_merged_AP_other[['LEA_STATE_x', 'LEA_STATE_NAME_x', 'LEAID_x', 'LEA_NAME_x', 'SCHID_x',
@@ -1783,32 +1773,34 @@ HS_Sch_char_enroll_sup_exp_SA_IB_AP_other=HS_Sch_char_enroll_sup_exp_SA_IB_merge
        'Total_AP_other_students', 'Total_students_tookAP']]
 
 
-# In[471]:
+# In[567]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_IB_AP_other.shape
 
 
-# In[472]:
+# #### Checking for missing or null values
+
+# In[568]:
 
 
 sns.heatmap(HS_Sch_char_enroll_sup_exp_SA_IB_AP_other.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# In[473]:
+# In[569]:
 
 
 null_columns=HS_Sch_char_enroll_sup_exp_SA_IB_AP_other.columns[HS_Sch_char_enroll_sup_exp_SA_IB_AP_other.isnull().any()]
 HS_Sch_char_enroll_sup_exp_SA_IB_AP_other[null_columns].isnull().sum()
 
 
-# In[474]:
+# In[570]:
 
 
 crdc_master_read = HS_Sch_char_enroll_sup_exp_SA_IB_AP_other.dropna(axis = 0, how ='any') 
 
 
-# In[475]:
+# In[571]:
 
 
 print("Old data frame length:", len(HS_Sch_char_enroll_sup_exp_SA_IB_AP_other)) 
@@ -1817,40 +1809,44 @@ print("Number of rows with at least 1 NA value: ",
       (len(HS_Sch_char_enroll_sup_exp_SA_IB_AP_other)-len(crdc_master_read))) 
 
 
-# In[476]:
+# #### Checking for missing or null values
+
+# In[572]:
 
 
 sns.heatmap(crdc_master_read.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# In[477]:
+# In[573]:
 
 
 crdc_master_read.shape
 
 
-# In[478]:
+# #### All relevant features necessary for the reading dataset are included so lets save this as crdc_master file for the reading
+
+# In[574]:
 
 
-crdc_master_read.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC/Clean_crdc_master_read.csv', index = False,header=True)
+crdc_master_read.to_csv (r'/Users/dansa/Documents/GitHub/Phase1/Data/CRDC/Clean_crdc_master_read.csv', index = False,header=True)
 
 
 # ##### Merging with AP math
 
-# In[479]:
+# In[575]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_IB_merged_AP_math = pandas.merge(left=HS_Sch_char_enroll_sup_exp_SA_IB,right=AP_math_clean, how='left', left_on='NCESSCH', right_on='NCESSCH')
 HS_Sch_char_enroll_sup_exp_SA_IB_merged_AP_math.shape
 
 
-# In[480]:
+# In[576]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_IB_merged_AP_math.columns
 
 
-# In[481]:
+# In[577]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_IB_APmath=HS_Sch_char_enroll_sup_exp_SA_IB_merged_AP_math[['LEA_STATE_x', 'LEA_STATE_NAME_x', 'LEAID_x', 'LEA_NAME_x', 'SCHID_x',
@@ -1860,7 +1856,7 @@ HS_Sch_char_enroll_sup_exp_SA_IB_APmath=HS_Sch_char_enroll_sup_exp_SA_IB_merged_
        'Total_AP_math_students', 'Total_students_tookAP']]
 
 
-# In[482]:
+# In[578]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_IB_APmath.shape
@@ -1868,20 +1864,20 @@ HS_Sch_char_enroll_sup_exp_SA_IB_APmath.shape
 
 # ##### Merging with Alg1 
 
-# In[483]:
+# In[579]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_IB_APmath_merged_Alg1 = pandas.merge(left=HS_Sch_char_enroll_sup_exp_SA_IB_APmath,right=Alg1_clean, how='left', left_on='NCESSCH', right_on='NCESSCH')
 HS_Sch_char_enroll_sup_exp_SA_IB_APmath_merged_Alg1.shape
 
 
-# In[484]:
+# In[580]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_IB_APmath_merged_Alg1.columns
 
 
-# In[485]:
+# In[581]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1=HS_Sch_char_enroll_sup_exp_SA_IB_APmath_merged_Alg1[['LEA_STATE_x', 'LEA_STATE_NAME_x', 'LEAID_x', 'LEA_NAME_x', 'SCHID_x',
@@ -1892,141 +1888,34 @@ HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1=HS_Sch_char_enroll_sup_exp_SA_IB_AP
        'Total_Alg1_pass_students']]
 
 
-# In[486]:
+# In[582]:
 
 
 HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1.shape
 
 
-# ##### Merging with Alg2
+# #### Checking for missing or null values
 
-# In[487]:
-
-
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_merged_Alg2= pandas.merge(left=HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1,right=Alg2_clean, how='left', left_on='NCESSCH', right_on='NCESSCH')
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_merged_Alg2.shape
-
-
-# In[488]:
-
-
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_merged_Alg2.columns
-
-
-# In[489]:
-
-
-sns.heatmap(HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_merged_Alg2.isnull(),yticklabels=False,cbar=True,cmap='viridis')
-
-
-# In[490]:
-
-
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2=HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_merged_Alg2[['LEA_STATE_x', 'LEA_STATE_NAME_x', 'LEAID_x', 'LEA_NAME_x', 'SCHID_x',
-       'SCH_NAME_x', 'COMBOKEY_x', 'Special_ed_schl_new',
-       'Magnet_schl_new', 'Charter_Schl_new', 'Alternate_schl_new', 'NCESSCH', 'LEVEL','Total_enroll_students', 'SCH_FTETEACH_TOT', 'SCH_FTETEACH_CERT',
-       'SCH_FTETEACH_NOTCERT', 'FTE_teachers_count', 'SalaryforTeachers','Total_SAT_ACT_students', 'SCH_IBENR_IND_new', 'Total_IB_students','SCH_APENR_IND_new', 'SCH_APCOURSES', 'SCH_APMATHENR_IND_new',
-       'Total_AP_math_students', 'Total_students_tookAP','SCH_MATHCLASSES_ALG', 'SCH_MATHCERT_ALG', 'Total_Alg1_enroll_students','Total_Alg1_pass_students',
-        'SCH_MATHCLASSES_ALG2','SCH_MATHCERT_ALG2', 'Total_Alg2_enroll_students']]
-
-
-# In[491]:
-
-
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2.shape
-
-
-# ##### Merging with Calculus
-
-# In[492]:
-
-
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2_merged_Cal= pandas.merge(left=HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2,right=Calculus_clean, how='left', left_on='NCESSCH', right_on='NCESSCH')
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2_merged_Cal.shape
-
-
-# In[493]:
-
-
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2_merged_Cal.columns
-
-
-# In[494]:
-
-
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2_Cal=HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2_merged_Cal[['LEA_STATE_x', 'LEA_STATE_NAME_x', 'LEAID_x', 'LEA_NAME_x', 'SCHID_x',
-       'SCH_NAME_x', 'COMBOKEY_x', 'Special_ed_schl_new',
-       'Magnet_schl_new', 'Charter_Schl_new', 'Alternate_schl_new', 'NCESSCH', 'LEVEL','Total_enroll_students', 'SCH_FTETEACH_TOT', 'SCH_FTETEACH_CERT',
-       'SCH_FTETEACH_NOTCERT', 'FTE_teachers_count', 'SalaryforTeachers','Total_SAT_ACT_students', 'SCH_IBENR_IND_new', 'Total_IB_students','SCH_APENR_IND_new', 'SCH_APCOURSES', 'SCH_APMATHENR_IND_new',
-       'Total_AP_math_students', 'Total_students_tookAP','SCH_MATHCLASSES_ALG', 'SCH_MATHCERT_ALG', 'Total_Alg1_enroll_students','Total_Alg1_pass_students',
-        'SCH_MATHCLASSES_ALG2','SCH_MATHCERT_ALG2', 'Total_Alg2_enroll_students','SCH_MATHCLASSES_CALC','SCH_MATHCERT_CALC', 'Total_Calc_enroll_students']]
-
-
-# In[495]:
-
-
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2_Cal.shape
-
-
-# ##### Merging with Geometry
-
-# In[496]:
-
-
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2_Cal_merged_Geo= pandas.merge(left=HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2_Cal,right=Geometry_clean, how='left', left_on='NCESSCH', right_on='NCESSCH')
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2_Cal_merged_Geo.shape
-
-
-# In[497]:
-
-
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2_Cal_merged_Geo.columns
-
-
-# In[498]:
-
-
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2_Cal_Geo=HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2_Cal_merged_Geo[['LEA_STATE_x', 'LEA_STATE_NAME_x', 'LEAID_x', 'LEA_NAME_x', 'SCHID_x',
-       'SCH_NAME_x', 'COMBOKEY_x', 'Special_ed_schl_new',
-       'Magnet_schl_new', 'Charter_Schl_new', 'Alternate_schl_new', 'NCESSCH', 'LEVEL','Total_enroll_students', 'SCH_FTETEACH_TOT', 'SCH_FTETEACH_CERT',
-       'SCH_FTETEACH_NOTCERT', 'FTE_teachers_count', 'SalaryforTeachers','Total_SAT_ACT_students', 'SCH_IBENR_IND_new', 'Total_IB_students','SCH_APENR_IND_new', 'SCH_APCOURSES', 'SCH_APMATHENR_IND_new',
-       'Total_AP_math_students', 'Total_students_tookAP','SCH_MATHCLASSES_ALG', 'SCH_MATHCERT_ALG', 'Total_Alg1_enroll_students','Total_Alg1_pass_students',
-        'SCH_MATHCLASSES_ALG2','SCH_MATHCERT_ALG2', 'Total_Alg2_enroll_students','SCH_MATHCLASSES_CALC','SCH_MATHCERT_CALC', 'Total_Calc_enroll_students','SCH_MATHCERT_GEOM', 'SCH_MATHCLASSES_GEOM',
-       'Total_Geomty_enroll_students']]
-
-
-# In[499]:
-
-
-HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2_Cal_Geo.shape
-
-
-# In[500]:
-
-
-sns.heatmap(HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1_2_Cal_Geo.isnull(),yticklabels=False,cbar=True,cmap='viridis')
-
-
-# In[501]:
+# In[583]:
 
 
 sns.heatmap(HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# In[502]:
+# In[584]:
 
 
 null_columns=HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1.columns[HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1.isnull().any()]
 HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1[null_columns].isnull().sum()
 
 
-# In[503]:
+# In[585]:
 
 
 crdc_master_math = HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1.dropna(axis = 0, how ='any') 
 
 
-# In[504]:
+# In[586]:
 
 
 print("Old data frame length:", len(HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1)) 
@@ -2035,26 +1924,22 @@ print("Number of rows with at least 1 NA value: ",
       (len(HS_Sch_char_enroll_sup_exp_SA_IB_APmath_Alg1)-len(crdc_master_math))) 
 
 
-# In[505]:
+# In[587]:
 
 
 crdc_master_math.shape
 
 
-# In[506]:
+# In[588]:
 
 
 crdc_master_math.dtypes
 
 
-# In[507]:
+# #### All relevant features necessary for the math dataset are included so lets save this as crdc_master file for the math
+
+# In[589]:
 
 
-crdc_master_math.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC/Clean_crdc_master_math.csv', index = False,header=True)
-
-
-# In[ ]:
-
-
-
+crdc_master_math.to_csv (r'/Users/dansa/Documents/GitHub/Phase1/Data/CRDC/Clean_crdc_master_math.csv', index = False,header=True)
 

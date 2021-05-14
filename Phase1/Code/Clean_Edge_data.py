@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ## Phase 1: Clean up of EDGE data files
+# ## Phase 1: Part 3: Clean up of EDGE data files. This notebook contains code that cleans and preps the edge data file that contains the school neighborhood income ratio estimate data
 # #### Notes: The estimates reflect the income-to- poverty ratio (IPR), which is the percentage of family income that is above or below the federal poverty threshold set for the family’s size and structure. The IPR indicator ranges from 0 to 999.1 Lower IPR values indicate a greater degree of poverty. A family with income at the poverty threshold has an IPR value of 100. The Census Bureau calculates the IPR based on money income reported for families. 
 
-# In[2]:
+# ### Loading necessary libraries
+
+# In[3]:
 
 
 import pandas
@@ -15,19 +17,13 @@ import seaborn as sns
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 
-# In[3]:
-
-
-cd
-
-
 # In[4]:
 
 
-cd /Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/EDGE
+cd /Users/dansa/Documents/GitHub/Phase1/Data/EDGE
 
 
-# Loading in file and reading the first 5 rows
+# #### Loading in file and reading the first 5 rows
 
 # In[5]:
 
@@ -50,7 +46,7 @@ edge.dtypes
 edge.shape
 
 
-# Adding leading zeros to Federal school ID and checking to see if change was applied accurately
+# #### Adding leading zeros to Federal school ID and checking to see if change was applied accurately
 
 # In[8]:
 
@@ -76,7 +72,7 @@ edge.head()
 edge.describe()
 
 
-# Checking to make sure School ID is unique and free of duplicates
+# #### Checking to make sure School ID is unique and free of duplicates
 
 # In[12]:
 
@@ -96,43 +92,43 @@ edge.drop(edge.columns[[4]], axis =1, inplace=True)
 edge.rename(columns={'IPR_EST':'Income_Poverty_ratio'}, inplace=True)
 
 
-# In[21]:
+# In[15]:
 
 
 edge.head()
 
 
-# Use heatmap to determine if there are missing data
+# #### Use heatmap to determine if there are missing data
 
-# In[22]:
+# In[16]:
 
 
 sns.heatmap(edge.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# Checking the distribution
+# #### Checking the distribution
 
-# In[23]:
+# In[17]:
 
 
 edge.hist()
 
 
-# In[24]:
+# In[18]:
 
 
 from pandas.plotting import scatter_matrix
 scatter_matrix(edge, alpha=0.2, figsize=(6, 6), diagonal='kde')
 
 
-# In[25]:
+# In[19]:
 
 
-edge.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/EDGE/Clean_EDGE.csv', index = False, header=True)
+#### Saving final copy of the merge file for later use
 
 
-# In[ ]:
+# In[20]:
 
 
-
+edge.to_csv (r'/Users/dansa/Documents/GitHub/Phase1/Data/EDGE/Clean_EDGE.csv', index = False, header=True)
 

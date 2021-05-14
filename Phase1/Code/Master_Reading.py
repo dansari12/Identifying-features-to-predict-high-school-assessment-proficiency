@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ### Combine all clean_data files from the various sources and create a Master data file for reading proficiency
+# ### Phase 1: Part 6: Combine all clean_data files from the various sources and create a Master data file for reading proficiency
 
-# In[1]:
+# In[38]:
 
 
 import pandas
@@ -14,26 +14,13 @@ import seaborn as sns
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 
-# In[2]:
+# In[39]:
 
 
-pip install --user scikit-learn
+cd /Users/dansa/Documents/GitHub/Phase1/Data/CCD
 
 
-# In[3]:
-
-
-import sys
-sys.path.append("/home/nbuser/.local/lib/python2.7/site-packages")
-
-
-# In[4]:
-
-
-cd /Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CCD
-
-
-# In[5]:
+# In[40]:
 
 
 ccd_master = pandas.read_csv("Clean_ccd_master.csv")
@@ -41,19 +28,19 @@ ccd_master['NCESSCH'] = ccd_master['NCESSCH'].apply(lambda x: '{0:0>12}'.format(
 ccd_master.head()
 
 
-# In[6]:
+# In[41]:
 
 
 ccd_master.shape
 
 
-# In[7]:
+# In[42]:
 
 
-cd /Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC
+cd /Users/dansa/Documents/GitHub/Phase1/Data/CRDC
 
 
-# In[8]:
+# In[43]:
 
 
 crdc_master_read = pandas.read_csv("Clean_crdc_master_read.csv")
@@ -61,19 +48,19 @@ crdc_master_read['NCESSCH'] = crdc_master_read['NCESSCH'].apply(lambda x: '{0:0>
 crdc_master_read.head()
 
 
-# In[9]:
+# In[44]:
 
 
 crdc_master_read.shape
 
 
-# In[10]:
+# In[45]:
 
 
-cd /Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/EDGE
+cd /Users/dansa/Documents/GitHub/Phase1/Data/EDGE
 
 
-# In[11]:
+# In[46]:
 
 
 edge = pandas.read_csv("Clean_EDGE.csv")
@@ -81,19 +68,19 @@ edge['NCESSCH'] = edge['NCESSCH'].apply(lambda x: '{0:0>12}'.format(x))
 edge.head()
 
 
-# In[12]:
+# In[47]:
 
 
 edge.shape
 
 
-# In[13]:
+# In[48]:
 
 
-cd /Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/EDFacts
+cd /Users/dansa/Documents/GitHub/Phase1/Data/EDFacts
 
 
-# In[14]:
+# In[49]:
 
 
 Eng_prof = pandas.read_csv("edfacts_eng_merged_ccd.csv")
@@ -101,7 +88,7 @@ Eng_prof['NCESSCH'] = Eng_prof['NCESSCH'].apply(lambda x: '{0:0>12}'.format(x))
 Eng_prof.head()
 
 
-# In[15]:
+# In[50]:
 
 
 Eng_prof.shape
@@ -109,75 +96,83 @@ Eng_prof.shape
 
 # ### Merge ccd and crdc file
 
-# In[16]:
+# In[51]:
 
 
 merged_ccd_crdc = pandas.merge(left=ccd_master,right=crdc_master_read, how='left', left_on='NCESSCH', right_on='NCESSCH')
 merged_ccd_crdc.shape
 
 
-# In[17]:
+# In[52]:
 
 
 merged_ccd_crdc.columns
 
 
-# In[18]:
+# In[53]:
 
 
 #merged_ccd_crdc.head().T
 
 
-# In[19]:
+# ### Merge ccd_crdc file with edge file
+
+# In[54]:
 
 
 merged_ccd_crdc_edge = pandas.merge(left=merged_ccd_crdc,right=edge, how='left', left_on='NCESSCH', right_on='NCESSCH')
 merged_ccd_crdc_edge.shape
 
 
-# In[20]:
+# In[55]:
 
 
 merged_ccd_crdc_edge.columns
 
 
-# In[21]:
+# In[56]:
 
 
 #merged_ccd_crdc_edge.head().T
 
 
-# In[22]:
+# ### Merge ccd_crdc_edge file with edfacts file
+
+# In[57]:
 
 
 merged_ccd_crdc_edge_engProf = pandas.merge(left=merged_ccd_crdc_edge,right=Eng_prof, how='left', left_on='NCESSCH', right_on='NCESSCH')
 merged_ccd_crdc_edge_engProf.shape
 
 
-# In[23]:
+# In[58]:
 
 
 merged_ccd_crdc_edge_engProf.columns
 
 
-# In[24]:
+# #### Drop duplicate columns
+
+# In[59]:
 
 
 merged_ccd_crdc_edge_engProf.drop([col for col in merged_ccd_crdc_edge_engProf.columns if col.endswith('_y')],axis=1,inplace=True)
 merged_ccd_crdc_edge_engProf.shape
 
 
-# In[25]:
+# In[60]:
 
 
 merged_ccd_crdc_edge_engProf.columns
 
 
-# In[26]:
+# #### Resorting columns
+
+# In[61]:
 
 
 master_reading=merged_ccd_crdc_edge_engProf[['SCHOOL_YEAR_x', 'ST_x','NAME', 'NCESSCH', 'LEVEL', 'SCH_TYPE_TEXT_x', 'SCH_TYPE_x',
-       'TITLEI_STATUS', 'TITLEI_STATUS_TEXT', 'MAGNET_TEXT', 'TEACHERS',
+       'TITLEI_STATUS', 'TITLEI_STATUS_TEXT', 'TEACHERS',
        'FARMS_COUNT', 'Special_ed_schl_new','Magnet_schl_new', 'Charter_Schl_new', 'Alternate_schl_new',
        'Total_enroll_students', 
        'SCH_FTETEACH_TOT', 'SCH_FTETEACH_CERT','SCH_FTETEACH_NOTCERT', 'FTE_teachers_count', 'SalaryforTeachers',
@@ -188,38 +183,40 @@ master_reading=merged_ccd_crdc_edge_engProf[['SCHOOL_YEAR_x', 'ST_x','NAME', 'NC
        'ALL_RLA00NUMVALID_1718','ALL_RLA00PCTPROF_1718_new']]
 
 
-# In[27]:
+# In[62]:
 
 
 master_reading.shape
 
 
-# In[28]:
+# In[63]:
 
 
-master_reading.head().T
+master_reading.head()
 
 
-# In[29]:
+# In[64]:
 
 
 sns.heatmap(master_reading.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# In[30]:
+# #### Dropping rows with null values
+
+# In[65]:
 
 
 null_columns=master_reading.columns[master_reading.isnull().any()]
 master_reading[null_columns].isnull().sum()
 
 
-# In[31]:
+# In[66]:
 
 
 master_reading_new = master_reading.dropna(axis = 0, how ='any') 
 
 
-# In[32]:
+# In[67]:
 
 
 print("Old data frame length:", len(master_reading)) 
@@ -228,26 +225,26 @@ print("Number of rows with at least 1 NA value: ",
       (len(master_reading)-len(master_reading_new))) 
 
 
-# In[33]:
+# In[68]:
 
 
 sns.heatmap(master_reading_new.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
 
-# In[34]:
+# In[69]:
 
 
 master_reading_new.describe()
 
 
-# In[38]:
+# In[70]:
 
 
 master_reading_new.shape
 
 
-# In[37]:
+# In[71]:
 
 
-master_reading_new.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/MASTER/Master_reading.csv', index = False, header=True)
+master_reading_new.to_csv (r'/Users/dansa/Documents/GitHub/Phase1/Data/MASTER/Master_reading.csv', index = False, header=True)
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ### Combine all clean_data files from the various sources and create a Master data file for math proficiency
+# ### Phase 1: Part 5: Combine all clean_data files from the various data sources and create a Master data file for math proficiency
 
 # In[1]:
 
@@ -17,7 +17,7 @@ get_ipython().run_line_magic('matplotlib', 'inline')
 # In[2]:
 
 
-cd /Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CCD
+cd /Users/dansa/Documents/GitHub/Phase1/Data/CCD
 
 
 # In[3]:
@@ -37,7 +37,7 @@ ccd_master.shape
 # In[5]:
 
 
-cd /Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/CRDC
+cd /Users/dansa/Documents/GitHub/Phase1/Data/CRDC
 
 
 # In[6]:
@@ -57,7 +57,7 @@ crdc_master_math.shape
 # In[8]:
 
 
-cd /Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/EDGE
+cd /Users/dansa/Documents/GitHub/Phase1/Data/EDGE
 
 
 # In[9]:
@@ -77,7 +77,7 @@ edge.shape
 # In[11]:
 
 
-cd /Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/EDFacts
+cd /Users/dansa/Documents/GitHub/Phase1/Data/EDFacts
 
 
 # In[12]:
@@ -109,6 +109,8 @@ merged_ccd_crdc.shape
 merged_ccd_crdc.columns
 
 
+# ### Merge ccd_crdc file with edge file
+
 # In[16]:
 
 
@@ -121,6 +123,8 @@ merged_ccd_crdc_edge.shape
 
 merged_ccd_crdc_edge.columns
 
+
+# ### Merge ccd_crdc_edge file with edfacts file
 
 # In[18]:
 
@@ -135,6 +139,8 @@ merged_ccd_crdc_edge_mathProf.shape
 merged_ccd_crdc_edge_mathProf.columns
 
 
+# #### Drop duplicate columns
+
 # In[20]:
 
 
@@ -142,11 +148,13 @@ merged_ccd_crdc_edge_mathProf.drop([col for col in merged_ccd_crdc_edge_mathProf
 merged_ccd_crdc_edge_mathProf.shape
 
 
+# #### Resorting columns
+
 # In[21]:
 
 
 master_math=merged_ccd_crdc_edge_mathProf[['SCHOOL_YEAR_x', 'ST_x', 'NAME', 'NCESSCH','LEVEL','SCH_TYPE_TEXT_x', 'SCH_TYPE_x', 
-       'TITLEI_STATUS', 'TITLEI_STATUS_TEXT', 'MAGNET_TEXT', 'TEACHERS',
+       'TITLEI_STATUS', 'TITLEI_STATUS_TEXT', 'TEACHERS',
        'FARMS_COUNT', 'Special_ed_schl_new','Magnet_schl_new', 'Charter_Schl_new', 'Alternate_schl_new', 
        'Total_enroll_students', 
        'SCH_FTETEACH_TOT', 'SCH_FTETEACH_CERT','SCH_FTETEACH_NOTCERT', 'FTE_teachers_count', 'SalaryforTeachers',
@@ -169,6 +177,8 @@ master_math.head()
 
 sns.heatmap(master_math.isnull(),yticklabels=False,cbar=True,cmap='viridis')
 
+
+# #### Dropping rows with null values
 
 # In[24]:
 
@@ -198,14 +208,14 @@ print("Number of rows with at least 1 NA value: ",
 master_math_new.describe()
 
 
-# In[41]:
+# In[28]:
 
 
 master_math_new.shape
 
 
-# In[42]:
+# In[29]:
 
 
-master_math_new.to_csv (r'/Users/dansari/Documents/GitHub/Identifying-features-to-predict-high-school-assessment-proficiency/Phase1/Data/MASTER/Master_math.csv', index = False, header=True)
+master_math_new.to_csv (r'/Users/dansa/Documents/GitHub/Phase1/Data/MASTER/Master_math.csv', index = False, header=True)
 
